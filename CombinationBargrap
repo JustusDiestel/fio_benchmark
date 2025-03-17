@@ -1,0 +1,116 @@
+(justusvenv) [root@max-cssb-store002 justusresults]# ls
+all_results.json                     combination_results_20250317_101805  combination_results_20250317_114446  combination_results_20250317_135432
+bildOeffnen.py                       combination_results_20250317_101931  combination_results_20250317_114536  experiment-result.csv
+combination_results_20250317_093909  combination_results_20250317_102337  combination_results_20250317_120101  fio_results
+combination_results_20250317_100011  combination_results_20250317_113003  combination_results_20250317_120350  result_1k_10_1.json
+combination_results_20250317_100543  combination_results_20250317_113125  combination_results_20250317_120443  seq_read_blocksize_result.json
+combination_results_20250317_100845  combination_results_20250317_113528  combination_results_20250317_122016  seq_write_blocksize_result.json
+combination_results_20250317_101517  combination_results_20250317_113614  combination_results_20250317_122408  small_combination_bs-numjob-iodepth_results
+combination_results_20250317_101709  combination_results_20250317_113713  combination_results_20250317_134638
+(justusvenv) [root@max-cssb-store002 justusresults]# cd combination_results_20250317_135432
+(justusvenv) [root@max-cssb-store002 combination_results_20250317_135432]# pwd
+/root/fio_benchmark/justusresults/combination_results_20250317_135432
+(justusvenv) [root@max-cssb-store002 combination_results_20250317_135432]# ls
+all_results_write_20250317_135432.json  fio_benchmark_write_20250317_135432_chart.png  result_1k_1_1.json
+(justusvenv) [root@max-cssb-store002 combination_results_20250317_135432]# cd
+(justusvenv) [root@max-cssb-store002 ~]# cd fio_benchmark/justusroutinen
+(justusvenv) [root@max-cssb-store002 justusroutinen]# ls
+combination_v2.py  combination_v3.py  combination_v4.py  seq_read_blocksize.fio  seq_write_blocksize.fio  small_combination_bs-numjob-iodepth.py
+(justusvenv) [root@max-cssb-store002 justusroutinen]# nano combination_v4.py
+(justusvenv) [root@max-cssb-store002 justusroutinen]# pyhton combination_v4.py
+bash: pyhton: command not found
+(justusvenv) [root@max-cssb-store002 justusroutinen]# python combination_v4.py
+Welche Operation: read, write, randread, randwrite (oder all für beide): randwrite
+Gib mehrere Blocksizes ein, getrennt durch Leerzeichen: 1k 4k 8k 
+Gib verschiedene Numjobs-Werte ein, getrennt durch Leerzeichen: 1 4
+Gib verschiedene Iodepth-Werte ein, getrennt durch Leerzeichen: 16
+Ergebnisse gespeichert in /root/fio_benchmark/justusresults/combination_results_20250317_141006/all_results_randwrite_20250317_141006.json
+   Block Size (Bytes)  Num Jobs  IO Depth  Read Bandwidth (MB/s)  Write Bandwidth (MB/s)
+0                1024         1        16                    0.0              180.846998
+1                1024         4        16                    0.0              526.843962
+2                4096         1        16                    0.0              652.938001
+3                4096         4        16                    0.0             1613.146358
+4                8192         1        16                    0.0             1135.629072
+5                8192         4        16                    0.0             2840.199077
+📊 Balkendiagramm gespeichert unter: /root/fio_benchmark/justusresults/combination_results_20250317_141006/fio_benchmark_randwrite_20250317_141006_chart.png
+(justusvenv) [root@max-cssb-store002 justusroutinen]# nano combination_v4.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  GNU nano 5.6.1                                                                         combination_v4.py                                                                         Modified  
+def plot_bar_chart(numjobs, block_sizes, iodepths, read_bandwidths, write_bandwidths):
+    if len(numjobs) == 0 or len(block_sizes) == 0:
+        print("⚠️ Nicht genug Daten für das Diagramm. PNG-Datei wird nicht gespeichert.")
+        return
+
+    # Daten für das Diagramm vorbereiten
+    data = []
+    for i in range(len(numjobs)):
+        data.append({
+            'Label': f"NJ: {int(numjobs[i])}, BS: {block_sizes[i]}B, ID: {int(iodepths[i])}",  
+            'Read Bandwidth (MB/s)': read_bandwidths[i] if read_bandwidths.size > 0 else 0,
+            'Write Bandwidth (MB/s)': write_bandwidths[i] if write_bandwidths.size > 0 else 0
+        })
+
+    # In DataFrame konvertieren
+    df_plot = pd.DataFrame(data)
+
+    # Balkendiagramm erstellen
+    fig, ax = plt.subplots(figsize=(20, 8))
+    df_melted = df_plot.melt(id_vars=["Label"], 
+                         value_vars=["Read Bandwidth (MB/s)", "Write Bandwidth (MB/s)"],
+                         var_name="Operation", value_name="Bandwidth (MB/s)")
+
+    # Farbschema: Read (Rot), Write (Blau)
+    palette = {"Read Bandwidth (MB/s)": "red", "Write Bandwidth (MB/s)": "blue"}
+
+    # Balkendiagramm mit seaborn
+    sns.barplot(data=df_melted, x="Label", y="Bandwidth (MB/s)", hue="Operation", dodge=True, ax=ax, palette=palette)
+
+    # Achsentitel setzen
+    ax.set_title("FIO Benchmark Ergebnisse", fontsize=14)
+    ax.set_xlabel("NumJobs, BlockSize, IO Depth", fontsize=12)
+    ax.set_ylabel("Bandwidth (MB/s)", fontsize=12)
+    ax.legend(title="Operation")
+
+    # X-Achsen-Labels drehen für bessere Lesbarkeit
+    plt.xticks(rotation=45, ha="right")
+
+    # Diagramm speichern
+    img_path = f"{dest_folder}/fio_benchmark_{operation}_{timestamp}_chart.png"
+    plt.tight_layout()  # Automatische Anpassung des Layouts
+    plt.savefig(img_path, dpi=300)
+    plt.close()
+
+    print(f"📊 Balkendiagramm gespeichert unter: {img_path}")
+
+# Diagramm erstellen (falls Daten vorhanden sind)
+plot_bar_chart(numjobs, block_sizes, iodepths, read_bw, write_bw)
+
+
+
+
+
+
+
+^G Help          ^O Write Out     ^W Where Is	   ^K Cut           ^T Execute       ^C Location      M-U Undo         M-A Set Mark     M-] To Bracket   M-Q Previous     ^B Back
+^X Exit          ^R Read File     ^\ Replace	   ^U Paste         ^J Justify       ^_ Go To Line    M-E Redo         M-6 Copy         ^Q Where Was     M-W Next         ^F Forward
